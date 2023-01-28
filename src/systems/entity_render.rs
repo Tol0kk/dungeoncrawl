@@ -8,7 +8,7 @@ pub fn entity_render(ecs: &SubWorld, #[resource] camera: &Camera) {
     draw_batch.target(1);
     let offset = Point::new(camera.left_x, camera.top_y);
 
-    <(&Point, &Render)>::query().filter(!component::<Player>())
+    <(&Point, &Render)>::query()
         .iter(ecs)
         .for_each(|(pos, render)| {
             draw_batch.set(*pos - offset, render.color, render.glyph);

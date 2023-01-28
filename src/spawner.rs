@@ -1,3 +1,5 @@
+use core::panic;
+
 use bracket_lib::terminal::{to_cp437, ColorPair, Point};
 
 use crate::prelude::*;
@@ -9,6 +11,24 @@ pub fn spawner_player(ecs: &mut World, pos: Point) {
         Render {
             color: ColorPair::new(WHITE, BLACK),
             glyph: to_cp437('@'),
+        },
+    ));
+}
+
+pub fn spawner_monster(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Point) {
+    ecs.push((
+        Enemy,
+        MovingRandomly,
+        pos,
+        Render {
+            color: ColorPair::new(WHITE, BLACK),
+            glyph: match rng.range(0,4) {
+                0 => to_cp437('E'),
+                1 => to_cp437('O'),
+                2 => to_cp437('o'),
+                3 => to_cp437('g'),
+                _ => panic!()
+            }
         },
     ));
 }
