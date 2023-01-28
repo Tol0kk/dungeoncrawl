@@ -32,6 +32,8 @@
           pkgconfig
           rustup # use for rust
           nodePackages.pnpm # Use for pnpm (tauri-selvet)
+          clang
+          lldb
         ];
       in
       {
