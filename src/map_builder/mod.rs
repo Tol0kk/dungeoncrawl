@@ -1,9 +1,9 @@
 use crate::prelude::*;
 
 mod automata;
+mod drunkard;
 mod empty;
 mod rooms;
-mod drunkard;
 
 const NULM_ROOMS: usize = 20;
 const MIN_ROOM_SIZE: i32 = 3;
@@ -23,15 +23,21 @@ pub struct MapBuilder {
 
 impl MapBuilder {
     pub fn new(rng: &mut RandomNumberGenerator) -> Self {
-        //let mut architect = automata::CellularAutomataArchitect {};
-        let mut architect = drunkard::DrunkardWalkArchitect {};
-        //let mut architect = rooms::RoomsArchitect {};
+        let mut architect: Box <dyn MapArchitect> = match rng.range(0, 3) {
+            0 => Box::new(automata::CellularAutomataArchitect {}),
+            1 => Box::new(drunkard::DrunkardWalkArchitect {}),
+            _ => Box::new(rooms::RoomsArchitect {}),
+        };
+
         //let mut architect = empty::EmptyArchitect{};
-        let map_builder = architect.new(rng);
-        println!("{} lantern have been generated",map_builder.lantern_spawns.len());
-        println!("{} monster have been generated",map_builder.monster_spawns.len());
-        println!("The amulet of Yala has spawn at {},{}",map_builder.amulet_start.x,map_builder.amulet_start.y);
-        map_builder
+        let mb = architect.new(rng);
+        println!("{} lantern have been generated", mb.lantern_spawns.len());
+        println!("{} monster have been generated", mb.monster_spawns.len());
+        println!(
+            "The amulet of Yala has spawn at {},{}",
+            mb.amulet_start.x, mb.amulet_start.y
+        );
+        mb
     }
     fn fill(&mut self, tile: TileType) {
         self.map.tiles.iter_mut().for_each(|t| *t = tile)
