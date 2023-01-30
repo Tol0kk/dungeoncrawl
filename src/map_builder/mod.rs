@@ -1,9 +1,10 @@
-use crate::prelude::*;
+use crate::{prelude::*, map_builder::prefab::apply_prefab};
 
 mod automata;
 mod drunkard;
 mod empty;
 mod rooms;
+mod prefab;
 
 const NULM_ROOMS: usize = 20;
 const MIN_ROOM_SIZE: i32 = 3;
@@ -30,7 +31,10 @@ impl MapBuilder {
         };
 
         //let mut architect = empty::EmptyArchitect{};
-        let mb = architect.new(rng);
+        let mut mb = architect.new(rng);
+
+        apply_prefab(&mut mb, rng);
+
         println!("{} lantern have been generated", mb.lantern_spawns.len());
         println!("{} monster have been generated", mb.monster_spawns.len());
         println!(
