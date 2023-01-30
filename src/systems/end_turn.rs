@@ -1,4 +1,3 @@
-
 use crate::prelude::*;
 
 #[system]
@@ -6,11 +5,8 @@ use crate::prelude::*;
 #[read_component(Point)]
 #[read_component(Player)]
 #[read_component(AmuletOfYala)]
-pub fn end_turn(
-    ecs: &SubWorld,
-    #[resource] turn_state: &mut TurnState
-) {
-    let mut player_hp = <(&Health,&Point)>::query().filter(component::<Player>());
+pub fn end_turn(ecs: &SubWorld, #[resource] turn_state: &mut TurnState) {
+    let mut player_hp = <(&Health, &Point)>::query().filter(component::<Player>());
     let mut amulet = <&Point>::query().filter(component::<AmuletOfYala>());
     let amulet_pos = amulet.iter(ecs).next().unwrap();
     let current_state = turn_state.clone();
@@ -21,7 +17,7 @@ pub fn end_turn(
         _ => current_state,
     };
 
-    player_hp.iter(ecs).for_each(|(hp,pos)| {
+    player_hp.iter(ecs).for_each(|(hp, pos)| {
         if hp.current < 1 {
             new_state = TurnState::GameOver
         }

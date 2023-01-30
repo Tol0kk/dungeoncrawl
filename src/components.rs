@@ -1,4 +1,5 @@
 pub use crate::prelude::*;
+use std::collections::HashSet;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Render {
@@ -24,21 +25,78 @@ pub struct Item;
 pub struct AmuletOfYala;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Decor;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Light {
+    pub color: ColorPair,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Health {
     pub current: i32,
     pub max: i32,
 }
 
-#[derive(Clone,PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Name(pub String);
 
 pub struct WantsToAttack {
     pub attacker: Entity,
-    pub victim : Entity,
+    pub victim: Entity,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct WantsToMove { // Use like a message that will be consume after being read use in system movenents
-    pub entity : Entity,
-    pub destination : Point,
+pub struct WantsToMove {
+    // Use like a message that will be consume after being read use in system movenents
+    pub entity: Entity,
+    pub destination: Point,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct FieldOfView {
+    pub visible_tiles: HashSet<Point>,
+    pub radius: i32,
+    pub is_dirty: bool,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct BigFieldOfView {
+    pub visible_tiles: HashSet<Point>,
+    pub radius: i32,
+    pub is_dirty: bool,
+}
+
+impl BigFieldOfView {
+    pub fn new(radius: i32) -> Self {
+        Self {
+            visible_tiles: HashSet::new(),
+            radius,
+            is_dirty: true,
+        }
+    }
+    pub fn clone_dirty(&self) -> Self {
+        Self {
+            visible_tiles: HashSet::new(),
+            radius: self.radius,
+            is_dirty: true,
+        }
+    }
+}
+
+impl FieldOfView {
+    pub fn new(radius: i32) -> Self {
+        Self {
+            visible_tiles: HashSet::new(),
+            radius,
+            is_dirty: true,
+        }
+    }
+    pub fn clone_dirty(&self) -> Self {
+        Self {
+            visible_tiles: HashSet::new(),
+            radius: self.radius,
+            is_dirty: true,
+        }
+    }
 }
