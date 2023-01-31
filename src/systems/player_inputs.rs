@@ -55,7 +55,7 @@ pub fn player_inputs(
                 ));
             }
         };
-        if did_something {
+        if !did_something {
             if let Ok(mut health) = ecs
                 .entry_mut(player_entity)
                 .unwrap()
