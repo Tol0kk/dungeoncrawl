@@ -47,7 +47,7 @@ impl MapBuilder {
         };
 
         println!("{} lantern have been generated", mb.lantern_spawns.len());
-        println!("{} monster have been generated", mb.monster_spawns.len());
+        println!("{} monster have been generated", mb.monster_spawns.len()); // counting method not accurate with spawn_entity method
         println!(
             "The amulet of Yala has spawn at {},{}",
             mb.amulet_start.x, mb.amulet_start.y

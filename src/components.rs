@@ -6,12 +6,12 @@ pub struct Render {
     pub color: ColorPair,
     pub glyph: FontCharType,
 }
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Player;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Enemy;
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MovingRandomly;
 
@@ -33,11 +33,18 @@ pub struct Light {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ProvidesHealing{
+    pub amount: i32
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ProvidesDungeonMap;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Health {
     pub current: i32,
     pub max: i32,
 }
-
 #[derive(Clone, PartialEq)]
 pub struct Name(pub String);
 
