@@ -52,6 +52,7 @@ impl State {
         resources.insert(map_builder.map);
         resources.insert(Camera::new(map_builder.player_start));
         resources.insert(TurnState::AwaitingInput);
+        resources.insert(map_builder.theme);
         Self {
             ecs,
             resources,
@@ -119,9 +120,14 @@ impl State {
             .monster_spawns
             .iter()
             .for_each(|pos| spawn_monster(&mut self.ecs, &mut rng, *pos));
+        map_builder
+            .lantern_spawns
+            .iter()
+            .for_each(|pos| spawn_lantern(&mut self.ecs, &mut rng, *pos));
         self.resources.insert(map_builder.map);
         self.resources.insert(Camera::new(map_builder.player_start));
         self.resources.insert(TurnState::AwaitingInput);
+        self.resources.insert(map_builder.theme);
     }
 }
 
