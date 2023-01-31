@@ -25,6 +25,17 @@ pub struct Item;
 pub struct AmuletOfYala;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ProvidesHealing{
+    pub amount: i32
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ProvidesDungeonMap;
+
+#[derive(Clone, PartialEq)]
+pub struct Carried(pub Entity);
+
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Decor;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -32,13 +43,6 @@ pub struct Light {
     pub color: ColorPair,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct ProvidesHealing{
-    pub amount: i32
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct ProvidesDungeonMap;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Health {
