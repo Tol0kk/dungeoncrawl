@@ -120,10 +120,6 @@ impl State {
             .monster_spawns
             .iter()
             .for_each(|pos| spawn_monster(&mut self.ecs, &mut rng, *pos));
-        map_builder
-            .lantern_spawns
-            .iter()
-            .for_each(|pos| spawn_lantern(&mut self.ecs, *pos));
         self.resources.insert(map_builder.map);
         self.resources.insert(Camera::new(map_builder.player_start));
         self.resources.insert(TurnState::AwaitingInput);

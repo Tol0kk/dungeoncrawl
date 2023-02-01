@@ -42,8 +42,6 @@ pub struct Decor;
 pub struct Light {
     pub color: ColorPair,
 }
-
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Health {
     pub current: i32,
@@ -100,7 +98,6 @@ impl BigFieldOfView {
         }
     }
 }
-
 impl FieldOfView {
     pub fn new(radius: i32) -> Self {
         Self {

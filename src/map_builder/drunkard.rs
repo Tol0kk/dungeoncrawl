@@ -29,7 +29,7 @@ impl MapArchitect for DrunkardWalkArchitect {
             < DESIRED_FLOOR
         {
             self.drunkard(
-                &Point::new(rng.range(0, SCREEN_WIDTH), rng.range(0, SCREEN_HEIGHT)),
+                &Point::new(rng.range(1, SCREEN_WIDTH-1), rng.range(1, SCREEN_HEIGHT-1)),
                 rng,
                 &mut mb.map,
             );

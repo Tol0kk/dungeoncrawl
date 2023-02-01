@@ -9,6 +9,7 @@ mod themes;
 
 const NULM_ROOMS: usize = 20;
 const MIN_ROOM_SIZE: i32 = 3;
+const MAX_ROOM_SIZE: i32 = 10;
 
 trait MapArchitect {
     fn new(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder;
@@ -31,9 +32,16 @@ pub struct MapBuilder {
 impl MapBuilder {
     pub fn new(rng: &mut RandomNumberGenerator) -> Self {
         let mut architect: Box <dyn MapArchitect> = match rng.range(0, 3) {
-            0 => Box::new(automata::CellularAutomataArchitect {}),
-            1 => Box::new(drunkard::DrunkardWalkArchitect {}),
-            _ => Box::new(rooms::RoomsArchitect {}),
+            0 => {
+                println!("Generate with CellularAutomataArchitect");
+                Box::new(automata::CellularAutomataArchitect {})
+            },
+            1 => {
+                println!("Generate with DrunkardWalkArchitect");
+                Box::new(drunkard::DrunkardWalkArchitect {})},
+            _ => {
+                println!("Generate with RoomsArchitect");
+                Box::new(rooms::RoomsArchitect {})},
         };
 
         //let mut architect = empty::EmptyArchitect{};
@@ -81,10 +89,10 @@ impl MapBuilder {
     fn build_random_rooms(&mut self, rng: &mut RandomNumberGenerator) {
         while self.rooms.len() < NULM_ROOMS {
             let room = Rect::with_size(
-                rng.range(1, SCREEN_WIDTH - 10),
-                rng.range(1, SCREEN_HEIGHT - 10),
-                rng.range(MIN_ROOM_SIZE, 10),
-                rng.range(MIN_ROOM_SIZE, 10),
+                rng.range(1, SCREEN_WIDTH - MAX_ROOM_SIZE - 1),
+                rng.range(1, SCREEN_HEIGHT - MAX_ROOM_SIZE - 1),
+                rng.range(MIN_ROOM_SIZE, MAX_ROOM_SIZE),
+                rng.range(MIN_ROOM_SIZE, MAX_ROOM_SIZE),
             );
             let mut overlap = false;
             for r in self.rooms.iter() {
@@ -94,7 +102,7 @@ impl MapBuilder {
             }
             if !overlap {
                 room.for_each(|p| {
-                    if p.x > 0 && p.x < SCREEN_WIDTH && p.y > 0 && p.y < SCREEN_HEIGHT {
+                    if p.x > 1 && p.x < SCREEN_WIDTH-1 && p.y > 1 && p.y < SCREEN_HEIGHT-1 {
                         let idx = map_idx(p.x, p.y);
                         self.map.tiles[idx] = TileType::Floor;
                     }

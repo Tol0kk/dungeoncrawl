@@ -14,7 +14,7 @@ pub fn spawner_player(ecs: &mut World, pos: Point) {
             current: 10,
             max: 10,
         },
-        FieldOfView::new(8),
+        FieldOfView::new(6),
         BigFieldOfView::new(80),
     ));
 }
@@ -37,7 +37,7 @@ pub fn spawn_monster(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Poin
             max: hp,
         },
         Name(name),
-        FieldOfView::new(6),
+        FieldOfView::new(5),
         BigFieldOfView::new(80),
     ));
 }
@@ -104,8 +104,6 @@ pub fn spawn_lantern(ecs: &mut World, pos: Point) {
         FieldOfView::new(2),
     ));
 }
-
-
 pub fn spawn_entity(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Point) {
     let roll = rng.roll_dice(1, 20);
     match roll {
