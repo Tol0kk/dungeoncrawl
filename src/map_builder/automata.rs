@@ -9,7 +9,6 @@ impl MapArchitect for CellularAutomataArchitect {
             map: Map::new(),
             rooms: Vec::new(),
             monster_spawns: Vec::new(),
-            lantern_spawns: Vec::new(),
             player_start: Point::zero(),
             amulet_start: Point::zero(),
             theme: super::themes::DungeonTheme::new(),
@@ -22,7 +21,6 @@ impl MapArchitect for CellularAutomataArchitect {
         mb.player_start = start;
         mb.amulet_start = mb.find_most_distant();
         mb.monster_spawns = mb.spawn_monster(&start, rng);
-        mb.lantern_spawns = mb.spawn_lantern(rng);
         mb
     }
 }

@@ -12,7 +12,6 @@ impl MapArchitect for DrunkardWalkArchitect {
             map: Map::new(),
             rooms: Vec::new(),
             monster_spawns: Vec::new(),
-            lantern_spawns: Vec::new(),
             player_start: Point::zero(),
             amulet_start: Point::zero(),
             theme: super::themes::DungeonTheme::new(),
@@ -29,7 +28,7 @@ impl MapArchitect for DrunkardWalkArchitect {
             < DESIRED_FLOOR
         {
             self.drunkard(
-                &Point::new(rng.range(0, SCREEN_WIDTH), rng.range(0, SCREEN_HEIGHT)),
+                &Point::new(rng.range(1, SCREEN_WIDTH-1), rng.range(1, SCREEN_HEIGHT-1)),
                 rng,
                 &mut mb.map,
             );

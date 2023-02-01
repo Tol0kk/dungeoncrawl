@@ -9,6 +9,7 @@ mod themes;
 
 const NULM_ROOMS: usize = 20;
 const MIN_ROOM_SIZE: i32 = 3;
+const MAX_ROOM_SIZE: i32 = 10;
 
 trait MapArchitect {
     fn new(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder;
@@ -22,7 +23,6 @@ pub struct MapBuilder {
     pub map: Map,
     pub rooms: Vec<Rect>,
     pub monster_spawns: Vec<Point>,
-    pub lantern_spawns: Vec<Point>,
     pub player_start: Point,
     pub amulet_start: Point,
     pub theme: Box<dyn MapTheme>,
@@ -31,9 +31,16 @@ pub struct MapBuilder {
 impl MapBuilder {
     pub fn new(rng: &mut RandomNumberGenerator) -> Self {
         let mut architect: Box <dyn MapArchitect> = match rng.range(0, 3) {
-            0 => Box::new(automata::CellularAutomataArchitect {}),
-            1 => Box::new(drunkard::DrunkardWalkArchitect {}),
-            _ => Box::new(rooms::RoomsArchitect {}),
+            0 => {
+                println!("Generate with CellularAutomataArchitect");
+                Box::new(automata::CellularAutomataArchitect {})
+            },
+            1 => {
+                println!("Generate with DrunkardWalkArchitect");
+                Box::new(drunkard::DrunkardWalkArchitect {})},
+            _ => {
+                println!("Generate with RoomsArchitect");
+                Box::new(rooms::RoomsArchitect {})},
         };
 
         //let mut architect = empty::EmptyArchitect{};
@@ -46,7 +53,6 @@ impl MapBuilder {
             _ => ForestTheme::new(),
         };
 
-        println!("{} lantern have been generated", mb.lantern_spawns.len());
         println!("{} monster have been generated", mb.monster_spawns.len()); // counting method not accurate with spawn_entity method
         println!(
             "The amulet of Yala has spawn at {},{}",
@@ -81,10 +87,10 @@ impl MapBuilder {
     fn build_random_rooms(&mut self, rng: &mut RandomNumberGenerator) {
         while self.rooms.len() < NULM_ROOMS {
             let room = Rect::with_size(
-                rng.range(1, SCREEN_WIDTH - 10),
-                rng.range(1, SCREEN_HEIGHT - 10),
-                rng.range(MIN_ROOM_SIZE, 10),
-                rng.range(MIN_ROOM_SIZE, 10),
+                rng.range(1, SCREEN_WIDTH - MAX_ROOM_SIZE - 1),
+                rng.range(1, SCREEN_HEIGHT - MAX_ROOM_SIZE - 1),
+                rng.range(MIN_ROOM_SIZE, MAX_ROOM_SIZE),
+                rng.range(MIN_ROOM_SIZE, MAX_ROOM_SIZE),
             );
             let mut overlap = false;
             for r in self.rooms.iter() {
@@ -94,7 +100,7 @@ impl MapBuilder {
             }
             if !overlap {
                 room.for_each(|p| {
-                    if p.x > 0 && p.x < SCREEN_WIDTH && p.y > 0 && p.y < SCREEN_HEIGHT {
+                    if p.x > 1 && p.x < SCREEN_WIDTH-1 && p.y > 1 && p.y < SCREEN_HEIGHT-1 {
                         let idx = map_idx(p.x, p.y);
                         self.map.tiles[idx] = TileType::Floor;
                     }
@@ -153,24 +159,6 @@ impl MapBuilder {
             .collect();
         let mut spawns = Vec::new();
         for _ in 0..NUM_MONSTERS {
-            let target_index = rng.random_slice_index(&spawnable_tiles).unwrap();
-            spawns.push(spawnable_tiles[target_index].clone());
-            spawnable_tiles.remove(target_index);
-        }
-        spawns
-    }
-    fn spawn_lantern(&self, rng: &mut RandomNumberGenerator) -> Vec<Point> {
-        const NUM_LANTERN: usize = 20;
-        let mut spawnable_tiles: Vec<Point> = self
-            .map
-            .tiles
-            .iter()
-            .enumerate()
-            .filter(|(_, t)| **t == TileType::Floor)
-            .map(|(idx, _)| self.map.index_to_point2d(idx))
-            .collect();
-        let mut spawns = Vec::new();
-        for _ in 0..NUM_LANTERN {
             let target_index = rng.random_slice_index(&spawnable_tiles).unwrap();
             spawns.push(spawnable_tiles[target_index].clone());
             spawnable_tiles.remove(target_index);

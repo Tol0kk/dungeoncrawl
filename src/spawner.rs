@@ -14,8 +14,7 @@ pub fn spawner_player(ecs: &mut World, pos: Point) {
             current: 10,
             max: 10,
         },
-        FieldOfView::new(8),
-        BigFieldOfView::new(80),
+        FieldOfView::new(6),
     ));
 }
 
@@ -37,8 +36,7 @@ pub fn spawn_monster(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Poin
             max: hp,
         },
         Name(name),
-        FieldOfView::new(6),
-        BigFieldOfView::new(80),
+        FieldOfView::new(5),
     ));
 }
 
@@ -88,23 +86,6 @@ pub fn spawn_magic_map(ecs: &mut World, pos: Point) {
         ProvidesDungeonMap
     ));
 }
-
-pub fn spawn_lantern(ecs: &mut World, pos: Point) {
-    ecs.push((
-        Decor,
-        Light {
-            color: ColorPair::new(LIGHT_YELLOW, BLACK),
-        },
-        pos,
-        Render {
-            color: ColorPair::new(YELLOW, BLACK),
-            glyph: to_cp437('s'),
-        },
-        Name("Lantern".to_string()),
-        FieldOfView::new(2),
-    ));
-}
-
 
 pub fn spawn_entity(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Point) {
     let roll = rng.roll_dice(1, 20);

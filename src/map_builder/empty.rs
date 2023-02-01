@@ -9,7 +9,6 @@ impl MapArchitect for EmptyArchitect {
             map: Map::new(),
             rooms: Vec::new(),
             monster_spawns: Vec::new(),
-            lantern_spawns: Vec::new(),
             player_start: Point::zero(),
             amulet_start: Point::zero(),
             theme: super::themes::DungeonTheme::new(),
@@ -17,12 +16,6 @@ impl MapArchitect for EmptyArchitect {
         mb.fill(TileType::Floor);
         mb.player_start = Point::new(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
         mb.amulet_start = mb.find_most_distant();
-        for _ in 0..20 {
-            mb.lantern_spawns.push(Point::new(
-                rng.range(1, SCREEN_WIDTH),
-                rng.range(1, SCREEN_HEIGHT),
-            ))
-        }
         for _ in 0..50 {
             mb.monster_spawns.push(Point::new(
                 rng.range(1, SCREEN_WIDTH),
