@@ -9,6 +9,7 @@ use crate::prelude::*;
 #[write_component(Health)]
 #[read_component(Item)]
 #[read_component(Carried)]
+#[read_component(Weapon)]
 pub fn player_inputs(
     ecs: &mut SubWorld,
     commands: &mut CommandBuffer,
@@ -34,18 +35,27 @@ pub fn player_inputs(
                     .for_each(|(entity, _, _)| {
                         commands.remove_component::<Point>(*entity);
                         commands.add_component(*entity, Carried(player));
+
+                        if let Ok(e) = ecs.entry_ref(*entity) {
+                            if e.get_component::<Weapon>().is_ok() {
+                                <(Entity, &Carried, &Weapon)>::query()
+                                    .iter(ecs)
+                                    .filter(|(_, c, _)| c.0 == player)
+                                    .for_each(|(e, _, _)| commands.remove(*e))
+                            }
+                        }
                     });
                 Point::zero()
             }
-            VirtualKeyCode::Key1 => use_item(0,ecs,commands),
-            VirtualKeyCode::Key2 => use_item(1,ecs,commands),
-            VirtualKeyCode::Key3 => use_item(2,ecs,commands),
-            VirtualKeyCode::Key4 => use_item(3,ecs,commands),
-            VirtualKeyCode::Key5 => use_item(4,ecs,commands),
-            VirtualKeyCode::Key6 => use_item(5,ecs,commands),
-            VirtualKeyCode::Key7 => use_item(6,ecs,commands),
-            VirtualKeyCode::Key8 => use_item(7,ecs,commands),
-            VirtualKeyCode::Key9 => use_item(8,ecs,commands),
+            VirtualKeyCode::Key1 => use_item(0, ecs, commands),
+            VirtualKeyCode::Key2 => use_item(1, ecs, commands),
+            VirtualKeyCode::Key3 => use_item(2, ecs, commands),
+            VirtualKeyCode::Key4 => use_item(3, ecs, commands),
+            VirtualKeyCode::Key5 => use_item(4, ecs, commands),
+            VirtualKeyCode::Key6 => use_item(5, ecs, commands),
+            VirtualKeyCode::Key7 => use_item(6, ecs, commands),
+            VirtualKeyCode::Key8 => use_item(7, ecs, commands),
+            VirtualKeyCode::Key9 => use_item(8, ecs, commands),
             _ => Point::zero(),
         };
         let (player_entity, destination) = players
@@ -89,19 +99,23 @@ pub fn player_inputs(
             .iter(ecs)
             .find_map(|entity| Some(*entity))
             .unwrap();
-        let item_entity = <(Entity, &Carried)>::query().filter(component::<Item>())
+        let item_entity = <(Entity, &Carried)>::query()
+            .filter(component::<Item>())
             .iter(ecs)
-            .filter(|(_,carried)| carried.0 == player_entity)
+            .filter(|(_, carried)| carried.0 == player_entity)
             .enumerate()
             .filter(|(item_count, _)| *item_count == n)
-            .find_map(|(_,(item_entity,_))| Some(*item_entity));
-        
-            if let Some(item_entity) = item_entity {
-                commands.push(((), ActivateItem{
+            .find_map(|(_, (item_entity, _))| Some(*item_entity));
+
+        if let Some(item_entity) = item_entity {
+            commands.push((
+                (),
+                ActivateItem {
                     used_by: player_entity,
                     item: item_entity,
-                }));
-            }
+                },
+            ));
+        }
         Point::zero()
     }
 }

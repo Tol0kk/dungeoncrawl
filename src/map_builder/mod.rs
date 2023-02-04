@@ -1,12 +1,17 @@
-use crate::{prelude::*, map_builder::{prefab::apply_prefab, themes::{DungeonTheme, ForestTheme}}};
+use crate::{
+    map_builder::{
+        prefab::apply_prefab,
+        themes::{DungeonTheme, ForestTheme},
+    },
+    prelude::*,
+};
 
 mod automata;
 mod drunkard;
 mod empty;
-mod rooms;
 mod prefab;
+mod rooms;
 mod themes;
-
 
 trait MapArchitect {
     fn new(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder;
@@ -28,17 +33,19 @@ pub struct MapBuilder {
 
 impl MapBuilder {
     pub fn new(rng: &mut RandomNumberGenerator) -> Self {
-        let mut architect: Box <dyn MapArchitect> = match rng.range(0, 3) {
+        let mut architect: Box<dyn MapArchitect> = match rng.range(0, 3) {
             0 => {
                 println!("Generate with CellularAutomataArchitect");
                 Box::new(automata::CellularAutomataArchitect {})
-            },
+            }
             1 => {
                 println!("Generate with DrunkardWalkArchitect");
-                Box::new(drunkard::DrunkardWalkArchitect {})},
+                Box::new(drunkard::DrunkardWalkArchitect {})
+            }
             _ => {
                 println!("Generate with RoomsArchitect");
-                Box::new(rooms::RoomsArchitect {})},
+                Box::new(rooms::RoomsArchitect {})
+            }
         };
 
         //let mut architect = empty::EmptyArchitect{};
@@ -46,7 +53,7 @@ impl MapBuilder {
 
         apply_prefab(&mut mb, rng);
 
-        mb.theme = match rng.range(0,2) {
+        mb.theme = match rng.range(0, 2) {
             0 => DungeonTheme::new(),
             _ => ForestTheme::new(),
         };
@@ -122,5 +129,16 @@ impl MapBuilder {
             spawnable_tiles.remove(target_index);
         }
         spawns
+    }
+    fn complete_map_border(&self) {
+        self.map
+            .tiles
+            .iter()
+            .enumerate()
+            .filter(|(idx, _)| {
+                let pt = self.map.index_to_point2d(*idx);
+                pt.x == 0 || pt.y == 0 || pt.x == SCREEN_WIDTH || pt.y == SCREEN_HEIGHT
+            })
+            .for_each(|(_, mut t)| t = &TileType::Wall)
     }
 }
