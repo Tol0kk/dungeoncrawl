@@ -18,8 +18,20 @@
           webkitgtk
           libsoup
           libxkbcommon
-           libGL
+          libGL
+          alsa-lib
+          libinput
 
+
+          extra-cmake-modules
+          xorg.libxcb
+          xorg.libXdmcp
+          xorg.libXau
+          xorg.libX11
+          xorg.xinput
+          xorg.libXi
+          xorg.libXrandr
+          xorg.libXcursor
           # WINIT_UNIX_BACKEND=wayland
           wayland
         ];
@@ -34,6 +46,10 @@
           nodePackages.pnpm # Use for pnpm (tauri-selvet)
           clang
           lldb
+          alsa-lib
+          xorg.libX11
+          xorg.xinput
+          libinput
         ];
       in
       {
