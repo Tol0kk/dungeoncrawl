@@ -8,7 +8,7 @@ const MAX_ROOM_SIZE: i32 = 10;
 pub struct RoomsArchitect {}
 
 impl MapArchitect for RoomsArchitect {
-    fn new(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder {
+    fn build(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder {
         let mut mb = MapBuilder {
             map: Map::new(),
             rooms: Vec::new(),
@@ -16,7 +16,7 @@ impl MapArchitect for RoomsArchitect {
             lantern_spawns: Vec::new(),
             player_start: Point::zero(),
             amulet_start: Point::zero(),
-            theme: super::themes::DungeonTheme::new(),
+            theme: super::themes::DungeonTheme::build(),
         };
         mb.fill(TileType::Wall);
         self.build_random_rooms(rng, &mut mb.map, &mut mb.rooms);

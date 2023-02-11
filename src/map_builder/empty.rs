@@ -4,7 +4,7 @@ use crate::prelude::*;
 pub struct EmptyArchitect {}
 
 impl MapArchitect for EmptyArchitect {
-    fn new(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder {
+    fn build(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder {
         let mut mb = MapBuilder {
             map: Map::new(),
             rooms: Vec::new(),
@@ -12,7 +12,7 @@ impl MapArchitect for EmptyArchitect {
             lantern_spawns: Vec::new(),
             player_start: Point::zero(),
             amulet_start: Point::zero(),
-            theme: super::themes::DungeonTheme::new(),
+            theme: super::themes::DungeonTheme::build(),
         };
         mb.fill(TileType::Floor);
         mb.player_start = Point::new(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);

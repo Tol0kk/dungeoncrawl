@@ -14,7 +14,7 @@ mod rooms;
 mod themes;
 
 trait MapArchitect {
-    fn new(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder;
+    fn build(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder;
 }
 
 pub trait MapTheme: Sync + Send {
@@ -49,13 +49,13 @@ impl MapBuilder {
         };
 
         //let mut architect = empty::EmptyArchitect{};
-        let mut mb = architect.new(rng);
+        let mut mb = architect.build(rng);
 
         apply_prefab(&mut mb, rng);
 
         mb.theme = match rng.range(0, 2) {
-            0 => DungeonTheme::new(),
-            _ => ForestTheme::new(),
+            0 => DungeonTheme::build(),
+            _ => ForestTheme::build(),
         };
 
         println!("{} lantern have been generated", mb.lantern_spawns.len());

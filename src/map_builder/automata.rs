@@ -4,7 +4,7 @@ use crate::prelude::*;
 pub struct CellularAutomataArchitect {}
 
 impl MapArchitect for CellularAutomataArchitect {
-    fn new(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder {
+    fn build(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder {
         let mut mb = MapBuilder {
             map: Map::new(),
             rooms: Vec::new(),
@@ -12,7 +12,7 @@ impl MapArchitect for CellularAutomataArchitect {
             lantern_spawns: Vec::new(),
             player_start: Point::zero(),
             amulet_start: Point::zero(),
-            theme: super::themes::DungeonTheme::new(),
+            theme: super::themes::DungeonTheme::build(),
         };
         self.random_noise_map(rng, &mut mb.map);
         for _ in 0..10 {

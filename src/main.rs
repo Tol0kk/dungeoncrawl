@@ -1,4 +1,4 @@
-#[allow(clippy::format_in_format_args)]
+#![allow(clippy::uninlined_format_args)]
 mod camera;
 mod components;
 mod map;
