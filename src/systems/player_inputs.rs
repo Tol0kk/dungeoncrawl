@@ -26,7 +26,8 @@ pub fn player_inputs(
             VirtualKeyCode::G => {
                 let (player, player_pos) = players
                     .iter(ecs)
-                    .find_map(|(entity, pos)| Some((*entity, *pos)))
+                    .map(|(entity, pos)| (*entity, *pos))
+                    .next()
                     .unwrap();
                 let mut items = <(Entity, &Item, &Point)>::query();
                 items
@@ -97,7 +98,8 @@ pub fn player_inputs(
         let player_entity = <Entity>::query()
             .filter(component::<Player>())
             .iter(ecs)
-            .find_map(|entity| Some(*entity))
+            .copied()
+            .next()
             .unwrap();
         let item_entity = <(Entity, &Carried)>::query()
             .filter(component::<Item>())
@@ -105,7 +107,8 @@ pub fn player_inputs(
             .filter(|(_, carried)| carried.0 == player_entity)
             .enumerate()
             .filter(|(item_count, _)| *item_count == n)
-            .find_map(|(_, (item_entity, _))| Some(*item_entity));
+            .map(|(_, (item_entity, _))| *item_entity)
+            .next();
 
         if let Some(item_entity) = item_entity {
             commands.push((

@@ -1,4 +1,5 @@
 use crate::prelude::*;
+#[allow(clippy::borrowed_box)]
 
 #[system]
 #[read_component(Player)]
@@ -25,15 +26,17 @@ pub fn map_render(
             let idx = map_idx(x, y);
             if map.in_bound(pt) && player_fov.visible_tiles.contains(&pt) | map.revealed_tiles[idx]
             {
-                let tint = if fov_light.iter(ecs).any(|light_fov| {
+                let light_far_visible = |light_fov : &FieldOfView| {
                     light_fov.visible_tiles.contains(&pt)
                         && player_big_fov.visible_tiles.contains(&pt)
-                }) {
+                };
+                // let light_close_visible = |light_fov| {
+                    // light_fov.visible_tiles.contains(&pt) && player_fov.visible_tiles.contains(&pt)
+                // };
+                let tint = if fov_light.iter(ecs).any(light_far_visible) {
                     LIGHTYELLOW
-                } else if fov_light.iter(ecs).any(|light_fov| {
-                    light_fov.visible_tiles.contains(&pt) && player_fov.visible_tiles.contains(&pt)
-                }) {
-                    LIGHTYELLOW
+                // } else if fov_light.iter(ecs).any(light_close_visible) {
+                    // LIGHTYELLOW
                 } else if player_fov.visible_tiles.contains(&pt) {
                     WHITE
                 } else {

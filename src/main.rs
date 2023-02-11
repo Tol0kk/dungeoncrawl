@@ -1,3 +1,4 @@
+#[allow(clippy::format_in_format_args)]
 mod camera;
 mod components;
 mod map;
@@ -43,7 +44,7 @@ impl State {
         //spawn_amulet_of_yala(&mut self.ecs, map_builder.amulet_start);
         let exit_idx = map_builder.map.point2d_to_index(map_builder.amulet_start);
         map_builder.map.tiles[exit_idx] = TileType::Exit;
-        spawn_level(&mut ecs, &mut rng, 0, &map_builder.monster_spawns);
+        spawn_level(&ecs, &mut rng, 0, &map_builder.monster_spawns).flush(&mut ecs, &mut resources);
         map_builder
             .lantern_spawns
             .iter()
@@ -117,7 +118,8 @@ impl State {
         //spawn_amulet_of_yala(&mut self.ecs, map_builder.amulet_start);
         let exit_idx = map_builder.map.point2d_to_index(map_builder.amulet_start);
         map_builder.map.tiles[exit_idx] = TileType::Exit;
-        spawn_level(&mut self.ecs, &mut rng, 0, &map_builder.monster_spawns);
+        spawn_level(&self.ecs, &mut rng, 0, &map_builder.monster_spawns)
+            .flush(&mut self.ecs, &mut self.resources);
         self.resources.insert(map_builder.map);
         self.resources.insert(Camera::new(map_builder.player_start));
         self.resources.insert(TurnState::AwaitingInput);
@@ -126,7 +128,7 @@ impl State {
     fn advance_level(&mut self) {
         let player_entity = *<Entity>::query()
             .filter(component::<Player>())
-            .iter(&mut self.ecs)
+            .iter(&self.ecs)
             .next()
             .unwrap();
         use std::collections::HashSet;
@@ -139,13 +141,13 @@ impl State {
             .for_each(|e| {
                 entities_to_keep.insert(e);
             });
-        let mut cb = CommandBuffer::new(&mut self.ecs);
+        let mut cb = CommandBuffer::new(&self.ecs);
         for e in Entity::query().iter(&self.ecs) {
             if !entities_to_keep.contains(e) {
                 cb.remove(*e);
             }
         }
-        cb.flush(&mut self.ecs);
+        cb.flush(&mut self.ecs, &mut self.resources);
         <&mut FieldOfView>::query()
             .iter_mut(&mut self.ecs)
             .for_each(|fov| fov.is_dirty = true);
@@ -166,11 +168,22 @@ impl State {
             let exit_idx = map_builder.map.point2d_to_index(map_builder.amulet_start);
             map_builder.map.tiles[exit_idx] = TileType::Exit;
         }
-        spawn_level(&mut self.ecs, &mut rng, map_level as usize, &map_builder.monster_spawns);
+        spawn_level(
+            &self.ecs,
+            &mut rng,
+            map_level as usize,
+            &map_builder.monster_spawns,
+        ).flush(&mut self.ecs, &mut self.resources);
         self.resources.insert(map_builder.map);
         self.resources.insert(Camera::new(map_builder.player_start));
         self.resources.insert(TurnState::AwaitingInput);
         self.resources.insert(map_builder.theme);
+    }
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

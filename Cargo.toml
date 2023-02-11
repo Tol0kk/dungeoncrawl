@@ -11,6 +11,8 @@ strip = true
 
 [dependencies]
 bracket-lib = "0.8.1"
-legion = "=0.3.1"
+legion = "0.4.0"
 serde = {version = "=1.0.115"}
 ron = "=0.6.1"
+macroquad = "0.3.25"
+macroquad-particles = "0.1.1"

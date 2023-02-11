@@ -9,7 +9,7 @@ mod template;
 
 pub fn spawner_player(ecs: &mut World, pos: Point) {
     ecs.push((
-        Player{map_level: 0},
+        Player { map_level: 0 },
         pos,
         Render {
             color: ColorPair::new(WHITE, BLACK),
@@ -25,14 +25,15 @@ pub fn spawner_player(ecs: &mut World, pos: Point) {
     ));
 }
 
+#[must_use]
 pub fn spawn_level(
-    ecs: &mut World,
-    rng : &mut RandomNumberGenerator,
-    level : usize,
-    spawn_points : &[Point] 
-) {
+    ecs: &World,
+    rng: &mut RandomNumberGenerator,
+    level: usize,
+    spawn_points: &[Point],
+) -> CommandBuffer {
     let template = Templates::load();
-    template.spawn_entities(ecs,rng,level,spawn_points);
+    template.spawn_entities(ecs, rng, level, spawn_points)
 }
 
 pub fn spawn_amulet_of_yala(ecs: &mut World, pos: Point) {
