@@ -1,10 +1,8 @@
-use std::thread::spawn;
-
 use bracket_lib::terminal::{to_cp437, ColorPair, Point};
 
 use crate::prelude::*;
 
-use self::template::{Template, Templates};
+use self::template::Templates;
 mod template;
 
 pub fn spawner_player(ecs: &mut World, pos: Point) {

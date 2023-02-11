@@ -26,7 +26,6 @@ impl Map {
     pub fn can_enter_tile(&self, point: Point) -> bool {
         self.in_bound(point) && self.tiles[map_idx(point.x, point.y)] == TileType::Floor ||
         self.in_bound(point) && self.tiles[map_idx(point.x, point.y)] == TileType::Exit
-
     }
     pub fn try_idx(&self, point: Point) -> Option<usize> {
         if !self.in_bound(point) {
@@ -48,6 +47,7 @@ impl Map {
             None
         }
     }
+    
 }
 
 impl BaseMap for Map {
@@ -74,7 +74,7 @@ impl BaseMap for Map {
     }
 
     fn is_opaque(&self, idx: usize) -> bool {
-        self.tiles[idx as usize] != TileType::Floor
+        self.tiles[idx] != TileType::Floor
     }
 }
 

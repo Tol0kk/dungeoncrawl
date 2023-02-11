@@ -36,9 +36,6 @@ pub fn combat(ecs: &mut SubWorld, commands: &mut CommandBuffer) {
             .map(|(_, dmg)| dmg.0)
             .sum();
 
-        dbg!(base_damage);
-        dbg!(weapon_damage);
-
         let final_damage = base_damage + weapon_damage;
 
         if let Ok(mut health) = ecs

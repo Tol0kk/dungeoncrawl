@@ -57,7 +57,7 @@ impl RoomsArchitect {
             }
         }
     }
-    fn build_corridors(&mut self,rng: &mut RandomNumberGenerator, map: &mut Map, rooms: &mut Vec<Rect>) {
+    fn build_corridors(&mut self,rng: &mut RandomNumberGenerator, map: &mut Map, rooms: &mut [Rect]) {
         fn apply_vertical_tunnel(map: &mut Map, y1: i32, y2: i32, x: i32) {
             use std::cmp::{max, min};
             for y in min(y1, y2)..=max(y1, y2) {
@@ -76,7 +76,7 @@ impl RoomsArchitect {
             }
         }
 
-        let mut rooms = rooms.clone();
+        
         rooms.sort_by(|a, b| a.center().x.cmp(&b.center().x));
 
         for (i, room) in rooms.iter().enumerate().skip(1) {

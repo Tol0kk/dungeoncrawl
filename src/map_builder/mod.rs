@@ -130,8 +130,9 @@ impl MapBuilder {
         }
         spawns
     }
-    fn complete_map_border(&self) {
-        self.map
+    fn complete_map_border(&mut self) {
+        let idxs: Vec<_> = self
+            .map
             .tiles
             .iter()
             .enumerate()
@@ -139,6 +140,10 @@ impl MapBuilder {
                 let pt = self.map.index_to_point2d(*idx);
                 pt.x == 0 || pt.y == 0 || pt.x == SCREEN_WIDTH || pt.y == SCREEN_HEIGHT
             })
-            .for_each(|(_, mut t)| t = &TileType::Wall)
+            .map(|(idx, _)| idx)
+            .collect();
+
+        idxs.into_iter()
+            .for_each(|i| self.map.tiles[i] = TileType::Wall);
     }
 }
