@@ -1,9 +1,23 @@
-use macroquad::prelude::*;
+use macroquad::{
+    miniquad::conf::{LinuxBackend, Platform},
+    prelude::*,
+};
 
-#[macroquad::main("3D")]
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "3D".to_owned(),
+        platform: Platform {
+            linux_backend: LinuxBackend::X11Only,
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
+#[macroquad::main(window_conf)]
 async fn main() {
-    let rust_logo = load_texture("examples/rust.png").await.unwrap();
-    let ferris = load_texture("examples/ferris.png").await.unwrap();
+    let rust_logo = load_texture("src/bin/rust.png").await.unwrap();
+    let ferris = load_texture("src/bin/ferris.png").await.unwrap();
 
     loop {
         clear_background(LIGHTGRAY);

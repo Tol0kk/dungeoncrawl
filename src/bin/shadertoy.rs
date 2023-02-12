@@ -1,3 +1,4 @@
+use macroquad::miniquad::conf::{Platform, LinuxBackend};
 use macroquad::prelude::*;
 
 use macroquad::ui::{
@@ -43,9 +44,20 @@ fn color_picker_texture(w: usize, h: usize) -> (Texture2D, Image) {
     (Texture2D::from_image(&image), image)
 }
 
-#[macroquad::main("Shadertoy")]
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "3D".to_owned(),
+        platform: Platform {
+            linux_backend: LinuxBackend::X11Only,
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
+#[macroquad::main(window_conf)]
 async fn main() {
-    let ferris = load_texture("examples/rust.png").await.unwrap();
+    let ferris = load_texture("src/bin/rust.png").await.unwrap();
     let (color_picker_texture, color_picker_image) = color_picker_texture(200, 200);
 
     let mut fragment_shader = DEFAULT_FRAGMENT_SHADER.to_string();
@@ -115,7 +127,7 @@ async fn main() {
 
         widgets::Window::new(hash!(), vec2(20., 20.), vec2(470., 650.))
             .label("Shader")
-            .ui(&mut *root_ui(), |ui| {
+            .ui(&mut root_ui(), |ui| {
                 ui.label(None, "Camera: ");
                 ui.same_line(0.0);
                 if ui.button(None, "Ortho") {
@@ -143,7 +155,7 @@ async fn main() {
                 ui.separator();
 
                 for (i, (name, uniform)) in uniforms.iter_mut().enumerate() {
-                    ui.label(None, &format!("{}", name));
+                    ui.label(None, &name.to_string());
                     ui.same_line(120.0);
 
                     match uniform {
@@ -245,8 +257,8 @@ async fn main() {
         if new_uniform_window {
             widgets::Window::new(hash!(), vec2(100., 100.), vec2(200., 80.))
                 .label("New uniform")
-                .ui(&mut *root_ui(), |ui| {
-                    if ui.active_window_focused() == false {
+                .ui(&mut root_ui(), |ui| {
+                    if !ui.active_window_focused() {
                         new_uniform_window = false;
                     }
                     ui.input_text(hash!(), "Name", &mut new_uniform_name);
@@ -258,7 +270,7 @@ async fn main() {
                     );
 
                     if ui.button(None, "Add") {
-                        if new_uniform_name.is_empty() == false {
+                        if !new_uniform_name.is_empty() {
                             let uniform = match uniform_type {
                                 0 => Uniform::Float1("0".to_string()),
                                 1 => Uniform::Float2("0".to_string(), "0".to_string()),
@@ -287,8 +299,8 @@ async fn main() {
         if colorpicker_window {
             colorpicker_window &= widgets::Window::new(hash!(), vec2(140., 100.), vec2(210., 240.))
                 .label("Colorpicker")
-                .ui(&mut *root_ui(), |ui| {
-                    if ui.active_window_focused() == false {
+                .ui(&mut root_ui(), |ui| {
+                    if !ui.active_window_focused() {
                         colorpicker_window = false;
                     }
 
@@ -311,7 +323,7 @@ async fn main() {
                         color_picker_texture,
                     );
 
-                    if x >= 0 && x < 200 && y >= 0 && y < 200 {
+                    if (0..200).contains(&x) && (0..200).contains(&y) {
                         canvas.rect(
                             Rect::new(mouse.0 - 3.5, mouse.1 - 3.5, 7.0, 7.0),
                             Color::new(0.3, 0.3, 0.3, 1.0),
@@ -354,7 +366,7 @@ async fn main() {
                     error = None;
                 }
                 Err(err) => {
-                    error = Some(format!("{:#?}", err));
+                    error = Some(format!("{err:#?}"));
                 }
             }
         }
@@ -363,7 +375,7 @@ async fn main() {
     }
 }
 
-const DEFAULT_FRAGMENT_SHADER: &'static str = "#version 100
+const DEFAULT_FRAGMENT_SHADER: &str = "#version 100
 precision lowp float;
 
 varying vec2 uv;
@@ -375,7 +387,7 @@ void main() {
 }
 ";
 
-const DEFAULT_VERTEX_SHADER: &'static str = "#version 100
+const DEFAULT_VERTEX_SHADER: &str = "#version 100
 precision lowp float;
 
 attribute vec3 position;

@@ -5,6 +5,7 @@ mod map;
 mod map_builder;
 mod spawner;
 mod systems;
+// mod tiled;
 mod turn_state;
 mod prelude {
     pub use bracket_lib::prelude::*;
@@ -24,6 +25,7 @@ mod prelude {
     pub use crate::systems::*;
     pub use crate::turn_state::*;
 }
+use macroquad::{miniquad, window::Conf};
 use prelude::*;
 
 struct State {
@@ -108,7 +110,6 @@ impl State {
             self.reset_game_state();
         }
     }
-
     fn reset_game_state(&mut self) {
         self.ecs = World::default();
         self.resources = Resources::default();
@@ -173,11 +174,30 @@ impl State {
             &mut rng,
             map_level as usize,
             &map_builder.monster_spawns,
-        ).flush(&mut self.ecs, &mut self.resources);
+        )
+        .flush(&mut self.ecs, &mut self.resources);
         self.resources.insert(map_builder.map);
         self.resources.insert(Camera::new(map_builder.player_start));
         self.resources.insert(TurnState::AwaitingInput);
         self.resources.insert(map_builder.theme);
+    }
+    fn state_tick(&mut self) {
+        let current_state = self.resources.get::<TurnState>().unwrap().clone();
+        match current_state {
+            TurnState::AwaitingInput => self
+                .input_systems
+                .execute(&mut self.ecs, &mut self.resources),
+            TurnState::PlayerTurn => self
+                .player_systems
+                .execute(&mut self.ecs, &mut self.resources),
+            TurnState::MonsterTurn => self
+                .monster_systems
+                .execute(&mut self.ecs, &mut self.resources),
+            // TurnState::GameOver => self.game_over(ctx),
+            // TurnState::Victory => self.victory(ctx),
+            TurnState::NextLevel => self.advance_level(),
+            _ => todo!(),
+        }
     }
 }
 
@@ -198,37 +218,129 @@ impl GameState for State {
         self.resources.insert(ctx.key);
         ctx.set_active_console(0);
         self.resources.insert(Point::from_tuple(ctx.mouse_pos()));
-        let current_state = self.resources.get::<TurnState>().unwrap().clone();
-        match current_state {
-            TurnState::AwaitingInput => self
-                .input_systems
-                .execute(&mut self.ecs, &mut self.resources),
-            TurnState::PlayerTurn => self
-                .player_systems
-                .execute(&mut self.ecs, &mut self.resources),
-            TurnState::MonsterTurn => self
-                .monster_systems
-                .execute(&mut self.ecs, &mut self.resources),
-            TurnState::GameOver => self.game_over(ctx),
-            TurnState::Victory => self.victory(ctx),
-            TurnState::NextLevel => self.advance_level(),
-        }
+        self.state_tick();
         render_draw_buffer(ctx).expect("Render error");
     }
 }
 
-fn main() -> BError {
-    let context = BTermBuilder::new()
-        .with_title("DungeonCrawler")
-        .with_fps_cap(30.0)
-        .with_dimensions(DISPLAY_WIDTH, DISPLAY_HEIGHT)
-        .with_tile_dimensions(32, 32)
-        .with_resource_path("resources/")
-        .with_font("dungeonfont.png", 32, 32)
-        .with_font("terminal8x8.png", 8, 8)
-        .with_simple_console(DISPLAY_WIDTH, DISPLAY_HEIGHT, "dungeonfont.png")
-        .with_simple_console_no_bg(DISPLAY_WIDTH, DISPLAY_HEIGHT, "dungeonfont.png")
-        .with_simple_console_no_bg(DISPLAY_WIDTH * 2, DISPLAY_HEIGHT * 2, "terminal8x8.png")
-        .build()?;
-    main_loop(context, State::new())
+// fn main() -> BError {
+//     let context = BTermBuilder::new()
+//         .with_title("DungeonCrawler")
+//         .with_fps_cap(30.0)
+//         .with_dimensions(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+//         .with_tile_dimensions(32, 32)
+//         .with_resource_path("resources/")
+//         .with_font("dungeonfont.png", 32, 32)
+//         .with_font("terminal8x8.png", 8, 8)
+//         .with_simple_console(DISPLAY_WIDTH, DISPLAY_HEIGHT, "dungeonfont.png")
+//         .with_simple_console_no_bg(DISPLAY_WIDTH, DISPLAY_HEIGHT, "dungeonfont.png")
+//         .with_simple_console_no_bg(DISPLAY_WIDTH * 2, DISPLAY_HEIGHT * 2, "terminal8x8.png")
+//         .build()?;
+//     main_loop(context, State::new())
+// }
+
+mod stage {
+    use super::*;
+    use macroquad::{
+        miniquad::{graphics::GraphicsContext, EventHandler},
+        prelude::{get_last_key_pressed, load_string, WHITE, DARKGRAY},
+        texture::{load_texture, FilterMode},
+        window::{next_frame, clear_background},
+    };
+    use macroquad_tiled::Map;
+
+    pub(crate) struct Stage {
+        state: State,
+    }
+
+    impl Stage {
+        pub async fn new(ctx: &mut GraphicsContext) -> Stage {
+            let mut state = State::new();
+            let tileset = load_texture("resources/dungeonfont.png").await.unwrap();
+            tileset.set_filter(FilterMode::Nearest);
+            state.resources.insert(tileset);
+            Stage {
+                state,
+            }
+        }
+    }
+
+    impl EventHandler for Stage {
+        fn update(&mut self, ctx: &mut GraphicsContext) {
+            self.state.state_tick();
+        }
+        fn draw(&mut self, ctx: &mut GraphicsContext) {
+            ctx.begin_default_pass(Default::default());
+
+            ctx.end_render_pass();
+
+            ctx.commit_frame();
+        }
+    }
+
+    // TODO Move TileSet inside legion ressource and remove tiled_map. only tileset is usefull
+    // #[no_mangle]
+    // static mut TILE_MAP: Option<macroquad_tiled::Map> = None;
+    // pub(crate) fn get_tile_map() -> &'static macroquad_tiled::Map {
+    //     unsafe { TILE_MAP.as_ref().unwrap_or_else(|| panic!()) }
+    // }
+    pub(crate) async fn init_tilemap() -> Map {
+        let tileset = load_texture("resources/dungeonfont.png").await.unwrap();
+        tileset.set_filter(FilterMode::Nearest);
+
+        let tiled_map_json = load_string("resources/map.json").await.unwrap();
+        let tiled_map = macroquad_tiled::load_map(&tiled_map_json, &[("dungeonfont.png", tileset)], &[]).unwrap();
+        // unsafe { TILE_MAP = Some(tiled_map) }
+        tiled_map
+    }
+
+    // fn tileset(texture: Texture2D) -> TileSet {
+    //     TileSet {
+    //         texture: texture,
+    //         tile_width: 32,
+    //         tile_height: 32,
+    //         columns: 16,
+    //     }
+    // }
+
+    pub(crate) async fn main_loop(state: &mut State) {
+        clear_background(DARKGRAY);
+        state.resources.insert(get_last_key_pressed());
+        state.state_tick();
+        next_frame().await
+    }
+}
+// pub(crate) use stage::get_context;
+
+// fn main() {
+//     // miniquad::start(Conf::default(), |mut ctx| {
+//     //     Box::new(stage::Stage::new(&mut ctx))
+//     // });
+// }
+
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "ROGUE".to_owned(),
+        // platform: Platform {
+        //     linux_backend: LinuxBackend::X11Only,
+        //     ..Default::default()
+        // },
+        high_dpi: true,
+        window_resizable: false,
+        window_width: DISPLAY_WIDTH * 32,
+        window_height: DISPLAY_HEIGHT * 32,
+        ..Default::default()
+    }
+}
+
+#[macroquad::main(window_conf)]
+async fn main() {
+    let mut tilesets = stage::init_tilemap().await.tilesets;
+    let tileset = tilesets.remove("dungeonfont").unwrap();
+
+    let mut state = State::new();
+    state.resources.insert(tileset);
+    loop {
+        stage::main_loop(&mut state).await;
+    }
 }

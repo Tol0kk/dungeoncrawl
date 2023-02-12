@@ -1,8 +1,20 @@
-use macroquad::prelude::*;
+use macroquad::{prelude::*, miniquad::{conf::{LinuxBackend, Platform}, start}};
 
-#[macroquad::main("Text")]
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "3D".to_owned(),
+        platform: Platform {
+            linux_backend: LinuxBackend::X11Only,
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
+
+#[macroquad::main(window_conf)]
 async fn main() {
-    let font = load_ttf_font("./examples/DancingScriptRegular.ttf")
+    let font = load_ttf_font("src/bin/DancingScriptRegular.ttf")
         .await
         .unwrap();
 

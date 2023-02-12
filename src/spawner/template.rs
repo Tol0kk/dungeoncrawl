@@ -11,7 +11,6 @@ pub struct Template {
     pub levels: HashSet<usize>,
     pub frequency: i32,
     pub name: String,
-    pub glyph: char,
     pub provides: Option<Vec<(String, i32)>>,
     pub hp: Option<i32>,
     pub base_damage: Option<i32>,
@@ -71,7 +70,7 @@ impl Templates {
             *pt,
             Render {
                 color: ColorPair::new(WHITE, BLACK),
-                glyph: to_cp437(template.glyph),
+                glyph: template.name.parse().unwrap_or((4,16).into()),
             },
             Name(template.name.clone()),
         ));

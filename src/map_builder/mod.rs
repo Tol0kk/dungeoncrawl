@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::{
     map_builder::{
         prefab::apply_prefab,
@@ -16,9 +18,56 @@ mod themes;
 trait MapArchitect {
     fn build(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder;
 }
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct MyTile(macroquad::prelude::Rect);
+
+impl From<MyTile> for macroquad::prelude::Rect {
+    fn from(value: MyTile) -> Self {
+        value.0
+    }
+}
+impl From<macroquad::prelude::Rect> for MyTile {
+    fn from(value: macroquad::prelude::Rect) -> Self {
+        Self(value)
+    }
+}
+
+impl From<(i32, i32)> for MyTile {
+    fn from(value: (i32, i32)) -> Self {
+        Self(macroquad::prelude::Rect::new(
+            ((value.0 - 1) * 32) as f32,
+            ((value.1 - 1) * 32) as f32,
+            32.,
+            32.,
+        ))
+    }
+}
+
+impl FromStr for MyTile {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "Player" => (1, 5).into(),
+            "Lantern" => (2,11).into(),
+            "AmletOfYala" => (4,14).into(),
+            "Healing Potion" => (1, 3).into(),
+            "Dungeon Map" => (12, 5).into(),
+            "Rusty Sword" => (4, 8).into(),
+            "Shiny Sword" => (4, 6).into(),
+            "Huge Sword" => (16, 3).into(),
+            "Goblin" => (8, 7).into(),
+            "Orc" => (16, 7).into(),
+            "Ogre" => (6, 5).into(),
+            "Ettin" => (16, 5).into(),
+            "" => (16, 4).into(),
+            x => Err(format!("unknown tile: {}", x))?,
+        })
+    }
+
+    type Err = String;
+}
 
 pub trait MapTheme: Sync + Send {
-    fn tile_to_render(&self, tile_type: TileType) -> FontCharType;
+    fn tile_to_render(&self, tile_type: TileType) -> MyTile;
 }
 
 pub struct MapBuilder {

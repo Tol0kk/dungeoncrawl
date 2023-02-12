@@ -1,4 +1,4 @@
-use macroquad::prelude::*;
+use macroquad::{prelude::*, miniquad::conf::{LinuxBackend, Platform}};
 use macroquad_particles::{self as particles, AtlasConfig, BlendMode, Emitter, EmitterConfig};
 
 fn explosion() -> particles::EmitterConfig {
@@ -31,21 +31,33 @@ fn smoke() -> particles::EmitterConfig {
 
 fn fire() -> particles::EmitterConfig {
     particles::EmitterConfig {
-        lifetime: 0.4,
+        lifetime: 1.,
         lifetime_randomness: 0.1,
-        amount: 10,
+        amount: 100,
         initial_direction_spread: 0.5,
         initial_velocity: 300.0,
-        atlas: Some(AtlasConfig::new(4, 4, 8..)),
+        atlas: Some(AtlasConfig::new(4, 4, 0..8)),
         size: 20.0,
+        gravity: Vec2 { x: 0., y: -1. },
         blend_mode: BlendMode::Additive,
         ..Default::default()
     }
 }
 
-#[macroquad::main("Fountain")]
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "3D".to_owned(),
+        platform: Platform {
+            linux_backend: LinuxBackend::X11Only,
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
+#[macroquad::main(window_conf)]
 async fn main() {
-    let texture = load_texture("examples/smoke_fire.png").await.unwrap();
+    let texture = load_texture("src/bin/smoke_fire.png").await.unwrap();
 
     let mut one_shot_emitter = particles::Emitter::new(EmitterConfig {
         texture: Some(texture),
@@ -83,7 +95,6 @@ async fn main() {
         if is_key_pressed(KeyCode::Space) {
             one_shot_emitter.config.emitting = true;
         }
-
         let local_emitter_pos = vec2(
             (get_time() * 0.3).sin() as f32 * screen_width() / 2.5 + screen_width() / 2.0,
             (get_time() * 0.5).cos() as f32 * screen_height() / 2.5 + screen_height() / 2.0,
@@ -91,13 +102,15 @@ async fn main() {
         flying_emitter_local.draw(local_emitter_pos);
         draw_circle(local_emitter_pos.x, local_emitter_pos.y, 15.0, RED);
 
-        let world_emitter_pos = vec2(
-            (get_time() * 0.6 + 1.0).sin() as f32 * screen_width() / 2.5 + screen_width() / 2.0,
-            (get_time() * 0.4 + 1.0).cos() as f32 * screen_height() / 2.5 + screen_height() / 2.0,
-        );
-
-        flying_emitter_world.draw(world_emitter_pos);
-        draw_circle(world_emitter_pos.x, world_emitter_pos.y, 15.0, GREEN);
+        for i in 0..10 {
+            let world_emitter_pos = vec2(
+                (get_time() as f64 * 0.6 + 1.0 + i as f64).sin() as f32 * screen_width() / 2.5 + screen_width() / 2.0,
+                (get_time() as f64 * 0.4 + 1.0 + i as f64).cos() as f32 * screen_height() / 2.5 + screen_height() / 2.0,
+            );
+    
+            flying_emitter_world.draw(world_emitter_pos);
+            draw_circle(world_emitter_pos.x, world_emitter_pos.y, 15.0, GREEN);
+        }
 
         next_frame().await
     }

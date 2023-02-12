@@ -50,6 +50,7 @@
           xorg.libX11
           xorg.xinput
           libinput
+          tiled
         ];
       in
       {

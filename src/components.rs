@@ -4,7 +4,7 @@ use std::collections::HashSet;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Render {
     pub color: ColorPair,
-    pub glyph: FontCharType,
+    pub glyph: MyTile,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]

@@ -1,4 +1,4 @@
-use bracket_lib::terminal::{to_cp437, ColorPair, Point};
+use bracket_lib::terminal::{ColorPair, Point};
 
 use crate::prelude::*;
 
@@ -11,7 +11,7 @@ pub fn spawner_player(ecs: &mut World, pos: Point) {
         pos,
         Render {
             color: ColorPair::new(WHITE, BLACK),
-            glyph: to_cp437('@'),
+            glyph: "Player".parse().unwrap(),
         },
         Health {
             current: 10,
@@ -41,7 +41,7 @@ pub fn spawn_amulet_of_yala(ecs: &mut World, pos: Point) {
         pos,
         Render {
             color: ColorPair::new(WHITE, BLACK),
-            glyph: to_cp437('|'),
+            glyph: "AmuletOfYala".parse().unwrap(),
         },
         Name("Amulet of Yala".to_string()),
     ));
@@ -56,7 +56,7 @@ pub fn spawn_lantern(ecs: &mut World, pos: Point) {
         pos,
         Render {
             color: ColorPair::new(YELLOW, BLACK),
-            glyph: to_cp437('s'),
+            glyph: "Lantern".parse().unwrap(),
         },
         Name("Lantern".to_string()),
         FieldOfView::new(2),

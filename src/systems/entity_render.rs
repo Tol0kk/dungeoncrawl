@@ -1,3 +1,9 @@
+use macroquad::{
+    prelude::{vec2, WHITE},
+    texture::{draw_texture_ex, DrawTextureParams},
+};
+use macroquad_tiled::TileSet;
+
 use crate::prelude::*;
 
 #[system]
@@ -7,13 +13,12 @@ use crate::prelude::*;
 #[read_component(BigFieldOfView)]
 #[read_component(Player)]
 #[read_component(Light)]
-pub fn entity_render(ecs: &SubWorld, #[resource] camera: &Camera) {
+#[write_component(Render)]
+pub fn entity_render(ecs: &SubWorld, #[resource] camera: &Camera, #[resource] tileset: &TileSet) {
     let mut fov = <&FieldOfView>::query().filter(component::<Player>());
     let mut big_fov = <&BigFieldOfView>::query().filter(component::<Player>());
     let mut lights_fov = <(&Point, &FieldOfView)>::query().filter(component::<Light>());
     let mut renderables = <(&Point, &Render)>::query();
-    let mut draw_batch = DrawBatch::new();
-    draw_batch.target(1);
     let offset = Point::new(camera.left_x, camera.top_y);
     let player_fov = fov.iter(ecs).next().unwrap();
     let player_big_fov = big_fov.iter(ecs).next().unwrap();
@@ -22,14 +27,22 @@ pub fn entity_render(ecs: &SubWorld, #[resource] camera: &Camera) {
         .filter(|(pos, _)| {
             player_fov.visible_tiles.contains(pos)
                 || (player_big_fov.visible_tiles.contains(pos) && {
-                    lights_fov
-                        .iter(ecs)
-                        .any(|(pt,_)| *pt == **pos )
+                    lights_fov.iter(ecs).any(|(pt, _)| *pt == **pos)
                 })
         })
         .for_each(|(pos, render)| {
-            draw_batch.set(*pos - offset, render.color, render.glyph);
-            //println!("{:?}",pos)
+            let pt = (*pos - offset) * 32;
+
+            draw_texture_ex(
+                tileset.texture,
+                pt.x as f32,
+                pt.y as f32,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(32., 32.)),
+                    source: Some(render.glyph.into()),
+                    ..Default::default()
+                },
+            );
         });
-    draw_batch.submit(5000).expect("Batch Error");
 }
