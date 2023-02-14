@@ -1,4 +1,4 @@
-use macroquad::{prelude::*, miniquad::{conf::{LinuxBackend, Platform}, start}};
+use macroquad::{prelude::*, miniquad::{conf::{LinuxBackend, Platform}}};
 
 fn window_conf() -> Conf {
     Conf {

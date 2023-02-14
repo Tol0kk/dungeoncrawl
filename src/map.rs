@@ -11,6 +11,7 @@ pub enum TileType {
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub revealed_tiles: Vec<bool>,
+    pub far_revealed_tiles: Vec<bool>,
 }
 
 impl Map {
@@ -18,6 +19,7 @@ impl Map {
         Self {
             tiles: vec![TileType::Floor; NUM_TILES],
             revealed_tiles: vec![false; NUM_TILES],
+            far_revealed_tiles: vec![false; NUM_TILES],
         }
     }
     pub fn in_bound(&self, point: Point) -> bool {

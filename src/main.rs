@@ -25,7 +25,7 @@ mod prelude {
     pub use crate::systems::*;
     pub use crate::turn_state::*;
 }
-use macroquad::{miniquad, window::Conf};
+use macroquad::{prelude::get_last_key_pressed, text::load_ttf_font, window::Conf};
 use prelude::*;
 
 struct State {
@@ -42,19 +42,21 @@ impl State {
         let mut resources = Resources::default();
         let mut rng = RandomNumberGenerator::new();
         let mut map_builder = MapBuilder::new(&mut rng);
-        spawner_player(&mut ecs, map_builder.player_start);
-        //spawn_amulet_of_yala(&mut self.ecs, map_builder.amulet_start);
         let exit_idx = map_builder.map.point2d_to_index(map_builder.amulet_start);
+
         map_builder.map.tiles[exit_idx] = TileType::Exit;
         spawn_level(&ecs, &mut rng, 0, &map_builder.monster_spawns).flush(&mut ecs, &mut resources);
         map_builder
             .lantern_spawns
             .iter()
             .for_each(|pos| spawn_lantern(&mut ecs, *pos));
+        spawner_player(&mut ecs, map_builder.player_start);
+
         resources.insert(map_builder.map);
         resources.insert(Camera::new(map_builder.player_start));
         resources.insert(TurnState::AwaitingInput);
         resources.insert(map_builder.theme);
+
         Self {
             ecs,
             resources,
@@ -242,81 +244,67 @@ impl GameState for State {
 mod stage {
     use super::*;
     use macroquad::{
-        miniquad::{graphics::GraphicsContext, EventHandler},
-        prelude::{get_last_key_pressed, load_string, WHITE, DARKGRAY},
+        prelude::{
+            get_last_key_pressed, is_key_released, load_string, Color, KeyCode, BLACK, DARKGRAY, WHITE,
+        },
+        text::{draw_text, draw_text_ex, get_text_center, Font, TextParams},
         texture::{load_texture, FilterMode},
-        window::{next_frame, clear_background},
+        window::{clear_background, next_frame, screen_height, screen_width},
     };
-    use macroquad_tiled::Map;
+    // use macroquad_tiled::Map;
 
-    pub(crate) struct Stage {
-        state: State,
-    }
-
-    impl Stage {
-        pub async fn new(ctx: &mut GraphicsContext) -> Stage {
-            let mut state = State::new();
-            let tileset = load_texture("resources/dungeonfont.png").await.unwrap();
-            tileset.set_filter(FilterMode::Nearest);
-            state.resources.insert(tileset);
-            Stage {
-                state,
-            }
-        }
-    }
-
-    impl EventHandler for Stage {
-        fn update(&mut self, ctx: &mut GraphicsContext) {
-            self.state.state_tick();
-        }
-        fn draw(&mut self, ctx: &mut GraphicsContext) {
-            ctx.begin_default_pass(Default::default());
-
-            ctx.end_render_pass();
-
-            ctx.commit_frame();
-        }
+    pub fn print_color_centered_utils(y: f32, text: &str, color: Color, font: Font) -> () {
+        let center = get_text_center(text, Some(font), 20, 1.0, 0.);
+        draw_text_ex(
+            text,
+            screen_width() / 2.,
+            screen_height() / 2.,
+            TextParams {
+                font: font,
+                ..Default::default()
+            },
+        );
     }
 
     // TODO Move TileSet inside legion ressource and remove tiled_map. only tileset is usefull
-    // #[no_mangle]
-    // static mut TILE_MAP: Option<macroquad_tiled::Map> = None;
-    // pub(crate) fn get_tile_map() -> &'static macroquad_tiled::Map {
-    //     unsafe { TILE_MAP.as_ref().unwrap_or_else(|| panic!()) }
-    // }
-    pub(crate) async fn init_tilemap() -> Map {
-        let tileset = load_texture("resources/dungeonfont.png").await.unwrap();
-        tileset.set_filter(FilterMode::Nearest);
+    // pub(crate) async fn init_tilemap() -> Map {
+    //     let tileset = load_texture("resources/dungeonfont.png").await.unwrap();
+    //     tileset.set_filter(FilterMode::Nearest);
 
-        let tiled_map_json = load_string("resources/map.json").await.unwrap();
-        let tiled_map = macroquad_tiled::load_map(&tiled_map_json, &[("dungeonfont.png", tileset)], &[]).unwrap();
-        // unsafe { TILE_MAP = Some(tiled_map) }
-        tiled_map
-    }
-
-    // fn tileset(texture: Texture2D) -> TileSet {
-    //     TileSet {
-    //         texture: texture,
-    //         tile_width: 32,
-    //         tile_height: 32,
-    //         columns: 16,
-    //     }
+    //     let tiled_map_json = load_string("resources/map.json").await.unwrap();
+    //     let tiled_map =
+    //         macroquad_tiled::load_map(&tiled_map_json, &[("dungeonfont.png", tileset)], &[])
+    //             .unwrap();
+    //     tiled_map
     // }
 
     pub(crate) async fn main_loop(state: &mut State) {
         clear_background(DARKGRAY);
-        state.resources.insert(get_last_key_pressed());
+
+        if let Some(key) = get_last_key_pressed() {
+            state.resources.insert(Some(key));
+        } else if let Some(mut key) = state.resources.get_mut::<Option<KeyCode>>() {
+            if key
+                .as_mut()
+                .map(|key| is_key_released(*key))
+                .unwrap_or_default()
+            {
+                *key = None;
+            }
+        }
+
         state.state_tick();
+        // draw_text(
+        //     "abcsdqsds",
+        //     screen_width()/2.,
+        //     screen_height()/2.,
+        //     50.,
+        //     BLACK,
+        // );
+
         next_frame().await
     }
 }
-// pub(crate) use stage::get_context;
-
-// fn main() {
-//     // miniquad::start(Conf::default(), |mut ctx| {
-//     //     Box::new(stage::Stage::new(&mut ctx))
-//     // });
-// }
 
 fn window_conf() -> Conf {
     Conf {
@@ -335,11 +323,14 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
-    let mut tilesets = stage::init_tilemap().await.tilesets;
-    let tileset = tilesets.remove("dungeonfont").unwrap();
+    // let mut tilesets = stage::init_tilemap().await.tilesets;
+    // let tileset = tilesets.remove("dungeonfont").unwrap();
+    let font = load_ttf_font("resources/font.ttf").await.unwrap();
 
     let mut state = State::new();
-    state.resources.insert(tileset);
+    // state.resources.insert(tileset);
+    state.resources.insert(get_last_key_pressed());
+    state.resources.insert(font);
     loop {
         stage::main_loop(&mut state).await;
     }

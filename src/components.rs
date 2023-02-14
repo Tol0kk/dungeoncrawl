@@ -50,6 +50,12 @@ pub struct Health {
     pub max: i32,
 }
 
+impl Health {
+    pub fn is_damaged(&self) -> bool {
+        self.current < self.max
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Damage(pub i32);
 
