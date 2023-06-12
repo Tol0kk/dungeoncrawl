@@ -104,8 +104,8 @@ async fn main() {
 
         for i in 0..10 {
             let world_emitter_pos = vec2(
-                (get_time() as f64 * 0.6 + 1.0 + i as f64).sin() as f32 * screen_width() / 2.5 + screen_width() / 2.0,
-                (get_time() as f64 * 0.4 + 1.0 + i as f64).cos() as f32 * screen_height() / 2.5 + screen_height() / 2.0,
+                (get_time() * 0.6 + 1.0 + i as f64).sin() as f32 * screen_width() / 2.5 + screen_width() / 2.0,
+                (get_time() * 0.4 + 1.0 + i as f64).cos() as f32 * screen_height() / 2.5 + screen_height() / 2.0,
             );
     
             flying_emitter_world.draw(world_emitter_pos);

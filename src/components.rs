@@ -8,12 +8,13 @@ pub struct Render {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Player{
+pub struct Player {
     pub map_level: u32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Enemy;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MovingRandomly;
 
@@ -27,8 +28,8 @@ pub struct Item;
 pub struct AmuletOfYala;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct ProvidesHealing{
-    pub amount: i32
+pub struct ProvidesHealing {
+    pub amount: i32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -80,7 +81,7 @@ pub struct WantsToMove {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ActivateItem {
     pub used_by: Entity,
-    pub item: Entity
+    pub item: Entity,
 }
 
 #[derive(Clone, Debug, PartialEq)]

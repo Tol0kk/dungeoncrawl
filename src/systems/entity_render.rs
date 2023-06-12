@@ -28,8 +28,8 @@ pub fn entity_render(ecs: &SubWorld, #[resource] camera: &Camera, #[resource] ti
         .iter(ecs)
         .filter(|(pos, _, _)| {
             let light_far_visible = |(_, light_fov): (_, &FieldOfView)| {
-                light_fov.visible_tiles.contains(&pos)
-                    && player_big_fov.visible_tiles.contains(&pos)
+                light_fov.visible_tiles.contains(pos)
+                    && player_big_fov.visible_tiles.contains(pos)
             };
             player_fov.visible_tiles.contains(pos)
                 || (player_big_fov.visible_tiles.contains(pos) && {

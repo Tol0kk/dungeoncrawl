@@ -21,6 +21,7 @@
           libGL
           alsa-lib
           libinput
+          mesa
 
 
           extra-cmake-modules
@@ -51,6 +52,7 @@
           xorg.xinput
           libinput
           tiled
+          mesa
         ];
       in
       {

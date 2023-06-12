@@ -7,6 +7,7 @@ mod spawner;
 mod systems;
 // mod tiled;
 mod turn_state;
+
 mod prelude {
     pub use bracket_lib::prelude::*;
     pub use legion::systems::CommandBuffer;
@@ -25,7 +26,11 @@ mod prelude {
     pub use crate::systems::*;
     pub use crate::turn_state::*;
 }
-use macroquad::{prelude::get_last_key_pressed, text::load_ttf_font, window::Conf};
+use macroquad::{
+    prelude::get_last_key_pressed,
+    text::load_ttf_font,
+    window::Conf,
+};
 use prelude::*;
 
 struct State {
@@ -245,38 +250,37 @@ mod stage {
     use super::*;
     use macroquad::{
         prelude::{
-            get_last_key_pressed, is_key_released, load_string, Color, KeyCode, BLACK, DARKGRAY, WHITE,
+            get_last_key_pressed, is_key_released, load_string, Color, KeyCode, DARKGRAY,
         },
-        text::{draw_text, draw_text_ex, get_text_center, Font, TextParams},
+        text::{draw_text_ex, get_text_center, Font, TextParams},
         texture::{load_texture, FilterMode},
-        window::{clear_background, next_frame, screen_height, screen_width},
+        window::{clear_background, next_frame, screen_width},
     };
-    // use macroquad_tiled::Map;
+    use macroquad_tiled::Map;
 
-    pub fn print_color_centered_utils(y: f32, text: &str, color: Color, font: Font) -> () {
-        let center = get_text_center(text, Some(font), 20, 1.0, 0.);
+    pub fn print_color_centered_utils(y: f32, text: &str, color: Color, font: Option<Font>) {
+        let center = get_text_center(text, font, 20, 1.0, 0.);
         draw_text_ex(
             text,
-            screen_width() / 2.,
-            screen_height() / 2.,
+            screen_width() / 2. - center.x,
+            y - center.y * 2.,
             TextParams {
-                font: font,
+                font: font.unwrap_or(TextParams::default().font),
+                color,
                 ..Default::default()
             },
         );
     }
 
     // TODO Move TileSet inside legion ressource and remove tiled_map. only tileset is usefull
-    // pub(crate) async fn init_tilemap() -> Map {
-    //     let tileset = load_texture("resources/dungeonfont.png").await.unwrap();
-    //     tileset.set_filter(FilterMode::Nearest);
+    pub(crate) async fn init_tilemap() -> Map {
+        let tileset = load_texture("resources/dungeonfont.png").await.unwrap();
+        tileset.set_filter(FilterMode::Nearest);
 
-    //     let tiled_map_json = load_string("resources/map.json").await.unwrap();
-    //     let tiled_map =
-    //         macroquad_tiled::load_map(&tiled_map_json, &[("dungeonfont.png", tileset)], &[])
-    //             .unwrap();
-    //     tiled_map
-    // }
+        let tiled_map_json = load_string("resources/map.json").await.unwrap();
+
+        macroquad_tiled::load_map(&tiled_map_json, &[("dungeonfont.png", tileset)], &[]).unwrap()
+    }
 
     pub(crate) async fn main_loop(state: &mut State) {
         clear_background(DARKGRAY);
@@ -310,7 +314,7 @@ fn window_conf() -> Conf {
     Conf {
         window_title: "ROGUE".to_owned(),
         // platform: Platform {
-        //     linux_backend: LinuxBackend::X11Only,
+        //     linux_backend: LinuxBackend::WaylandOnly,
         //     ..Default::default()
         // },
         high_dpi: true,
@@ -323,12 +327,12 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
-    // let mut tilesets = stage::init_tilemap().await.tilesets;
-    // let tileset = tilesets.remove("dungeonfont").unwrap();
+    let mut tilesets = stage::init_tilemap().await.tilesets;
+    let tileset = tilesets.remove("dungeonfont").unwrap();
     let font = load_ttf_font("resources/font.ttf").await.unwrap();
 
     let mut state = State::new();
-    // state.resources.insert(tileset);
+    state.resources.insert(tileset);
     state.resources.insert(get_last_key_pressed());
     state.resources.insert(font);
     loop {

@@ -70,7 +70,7 @@ impl Templates {
             *pt,
             Render {
                 color: ColorPair::new(WHITE, BLACK),
-                glyph: template.name.parse().unwrap_or((4,16).into()),
+                glyph: template.name.parse().unwrap_or_else(|_| (4,16).into()),
             },
             Name(template.name.clone()),
         ));

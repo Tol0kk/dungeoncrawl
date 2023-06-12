@@ -16,6 +16,6 @@ serde = {version = "=1.0.115"}
 ron = "=0.6.1"
 macroquad = "0.3.24"
 macroquad-particles = "0.1.1"
-# macroquad-tiled = "0.1.1"
+macroquad-tiled = "0.1.1"
 egui-macroquad = "0.12.0"
 egui = "0.19.0"

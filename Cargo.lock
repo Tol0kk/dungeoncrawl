@@ -695,6 +695,7 @@ dependencies = [
  "legion",
  "macroquad",
  "macroquad-particles",
+ "macroquad-tiled",
  "ron",
  "serde",
 ]
@@ -1228,6 +1229,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "macroquad-tiled"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6fee87816ce03b309adf842e1cb984fdd2f1917ccf0542028cdc7af67000c97f"
+dependencies = [
+ "macroquad",
+ "nanoserde",
+]
+
+[[package]]
 name = "macroquad_macro"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1328,6 +1339,21 @@ dependencies = [
  "wasi",
  "windows-sys 0.42.0",
 ]
+
+[[package]]
+name = "nanoserde"
+version = "0.1.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "755e7965536bc54d7c9fba2df5ada5bf835b0443fd613f0a53fa199a301839d3"
+dependencies = [
+ "nanoserde-derive",
+]
+
+[[package]]
+name = "nanoserde-derive"
+version = "0.1.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed7a94da6c6181c35d043fc61c43ac96d3a5d739e7b8027f77650ba41504d6ab"
 
 [[package]]
 name = "ndk"

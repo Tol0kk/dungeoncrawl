@@ -37,7 +37,7 @@ impl Stage {
 
         let bindings = Bindings {
             vertex_buffers: vec![vertex_buffer],
-            index_buffer: index_buffer,
+            index_buffer,
             images: vec![],
         };
 
@@ -126,8 +126,8 @@ impl EventHandler for Stage {
 }
 
 fn main() {
-    miniquad::start(conf::Conf::default(), |mut ctx| {
-        Box::new(Stage::new(&mut ctx))
+    miniquad::start(conf::Conf::default(), |ctx| {
+        Box::new(Stage::new(ctx))
     });
 }
 
