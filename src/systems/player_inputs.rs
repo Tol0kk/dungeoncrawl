@@ -18,6 +18,7 @@ pub fn player_inputs(
 ) {
     let mut players = <(Entity, &Point)>::query().filter(component::<Player>());
     if let Some(key) = key {
+        dbg!(&key);
         let delta = match key {
             KeyCode::Left => Point::new(-1, 0),
             KeyCode::Right => Point::new(1, 0),
@@ -48,15 +49,15 @@ pub fn player_inputs(
                     });
                 Point::zero()
             }
-            KeyCode::Key1 => use_item(0, ecs, commands),
-            KeyCode::Key2 => use_item(1, ecs, commands),
-            KeyCode::Key3 => use_item(2, ecs, commands),
-            KeyCode::Key4 => use_item(3, ecs, commands),
-            KeyCode::Key5 => use_item(4, ecs, commands),
-            KeyCode::Key6 => use_item(5, ecs, commands),
-            KeyCode::Key7 => use_item(6, ecs, commands),
-            KeyCode::Key8 => use_item(7, ecs, commands),
-            KeyCode::Key9 => use_item(8, ecs, commands),
+            KeyCode::F1 => use_item(0, ecs, commands),
+            KeyCode::F2 => use_item(1, ecs, commands),
+            KeyCode::F3 => use_item(2, ecs, commands),
+            KeyCode::F4 => use_item(3, ecs, commands),
+            KeyCode::F5 => use_item(4, ecs, commands),
+            KeyCode::F6 => use_item(5, ecs, commands),
+            KeyCode::F7 => use_item(6, ecs, commands),
+            KeyCode::F8 => use_item(7, ecs, commands),
+            KeyCode::F9 => use_item(8, ecs, commands),
             _ => Point::zero(),
         };
         let (player_entity, destination) = players

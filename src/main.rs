@@ -26,11 +26,13 @@ mod prelude {
     pub use crate::systems::*;
     pub use crate::turn_state::*;
 }
+
 use macroquad::{
-    prelude::get_last_key_pressed,
+    prelude::{get_last_key_pressed, KeyCode},
     text::load_ttf_font,
     window::Conf,
 };
+use macroquad_tiled::TileSet;
 use prelude::*;
 
 struct State {
@@ -42,7 +44,7 @@ struct State {
 }
 
 impl State {
-    fn new() -> Self {
+    fn new(tileset: TileSet, font: macroquad::text::Font) -> Self {
         let mut ecs = World::default();
         let mut resources = Resources::default();
         let mut rng = RandomNumberGenerator::new();
@@ -61,6 +63,9 @@ impl State {
         resources.insert(Camera::new(map_builder.player_start));
         resources.insert(TurnState::AwaitingInput);
         resources.insert(map_builder.theme);
+        resources.insert(get_last_key_pressed());
+        resources.insert(tileset);
+        resources.insert(font);
 
         Self {
             ecs,
@@ -70,68 +75,77 @@ impl State {
             monster_systems: build_monster_scheduler(),
         }
     }
-    fn game_over(&mut self, ctx: &mut BTerm) {
-        ctx.set_active_console(2);
-        ctx.print_color_centered(2, RED, BLACK, "Your quest has ended.");
-        ctx.print_color_centered(
-            4,
-            WHITE,
-            BLACK,
+    fn game_over(&mut self) {
+        use macroquad::prelude::{GREEN, RED, WHITE, YELLOW};
+        stage::print_color_centered_utils(20., "Your quest has ended.", RED, None);
+        stage::print_color_centered_utils(
+            40.,
             "Slain by a monster, your hero's journey has come to a premature end.",
-        );
-        ctx.print_color_centered(
-            5,
             WHITE,
-            BLACK,
+            None,
+        );
+        stage::print_color_centered_utils(
+            60.,
             "The Amulet of Yala remains unclaimend, and your home town is not saved.",
+            WHITE,
+            None,
         );
-        ctx.print_color_centered(
-            8,
-            YELLOW,
-            BLACK,
+        stage::print_color_centered_utils(
+            80.,
             "Don't worry, you can always try again with a new hero.",
+            YELLOW,
+            None,
         );
-        ctx.print_color_centered(9, GREEN, BLACK, "Press 1 to play again.");
-        if let Some(VirtualKeyCode::Key1) = ctx.key {
+        stage::print_color_centered_utils(100., "Press 1 to play again.", GREEN, None);
+        if let Some(KeyCode::R) = get_last_key_pressed() {
             self.reset_game_state();
         }
     }
-    fn victory(&mut self, ctx: &mut BTerm) {
-        ctx.set_active_console(2);
-        ctx.print_color_centered(2, GREEN, BLACK, "You have won.");
-        ctx.print_color_centered(
-            4,
-            WHITE,
-            BLACK,
+    fn victory(&mut self) {
+        use macroquad::prelude::{GREEN, WHITE};
+        stage::print_color_centered_utils(20., "You have won.", GREEN, None);
+        stage::print_color_centered_utils(
+            40.,
             "You put on the Amulet of Yala and feel its power course through your veins",
-        );
-        ctx.print_color_centered(
-            5,
             WHITE,
-            BLACK,
-            "Yout town is saved, and you can return to your normal life",
+            None,
         );
-        ctx.print_color_centered(7, GREEN, BLACK, "Press I to play again");
-
-        if let Some(VirtualKeyCode::Key1) = ctx.key {
+        stage::print_color_centered_utils(
+            60.,
+            "Yout town is saved, and you can return to your normal life",
+            WHITE,
+            None,
+        );
+        stage::print_color_centered_utils(80., "Press I to play again", GREEN, None);
+        if let Some(KeyCode::R) = get_last_key_pressed() {
             self.reset_game_state();
         }
     }
     fn reset_game_state(&mut self) {
         self.ecs = World::default();
-        self.resources = Resources::default();
         let mut rng = RandomNumberGenerator::new();
         let mut map_builder = MapBuilder::new(&mut rng);
-        spawner_player(&mut self.ecs, map_builder.player_start);
-        //spawn_amulet_of_yala(&mut self.ecs, map_builder.amulet_start);
+        self.resources.remove::<Map>();
+        self.resources.remove::<Camera>();
+        self.resources.remove::<TurnState>();
+        self.resources.remove::<Box<dyn MapTheme>>();
+        self.resources.remove::<KeyCode>();
+
         let exit_idx = map_builder.map.point2d_to_index(map_builder.amulet_start);
         map_builder.map.tiles[exit_idx] = TileType::Exit;
         spawn_level(&self.ecs, &mut rng, 0, &map_builder.monster_spawns)
             .flush(&mut self.ecs, &mut self.resources);
+        map_builder
+            .lantern_spawns
+            .iter()
+            .for_each(|pos| spawn_lantern(&mut self.ecs, *pos));
+        spawner_player(&mut self.ecs, map_builder.player_start);
+
         self.resources.insert(map_builder.map);
         self.resources.insert(Camera::new(map_builder.player_start));
         self.resources.insert(TurnState::AwaitingInput);
         self.resources.insert(map_builder.theme);
+        self.resources.insert(get_last_key_pressed());
     }
     fn advance_level(&mut self) {
         let player_entity = *<Entity>::query()
@@ -200,58 +214,18 @@ impl State {
             TurnState::MonsterTurn => self
                 .monster_systems
                 .execute(&mut self.ecs, &mut self.resources),
-            // TurnState::GameOver => self.game_over(ctx),
-            // TurnState::Victory => self.victory(ctx),
+            TurnState::GameOver => self.game_over(),
+            TurnState::Victory => self.victory(),
             TurnState::NextLevel => self.advance_level(),
             _ => todo!(),
         }
     }
 }
 
-impl Default for State {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl GameState for State {
-    fn tick(&mut self, ctx: &mut BTerm) {
-        ctx.set_active_console(0);
-        ctx.cls();
-        ctx.set_active_console(1);
-        ctx.cls();
-        ctx.set_active_console(2);
-        ctx.cls();
-        self.resources.insert(ctx.key);
-        ctx.set_active_console(0);
-        self.resources.insert(Point::from_tuple(ctx.mouse_pos()));
-        self.state_tick();
-        render_draw_buffer(ctx).expect("Render error");
-    }
-}
-
-// fn main() -> BError {
-//     let context = BTermBuilder::new()
-//         .with_title("DungeonCrawler")
-//         .with_fps_cap(30.0)
-//         .with_dimensions(DISPLAY_WIDTH, DISPLAY_HEIGHT)
-//         .with_tile_dimensions(32, 32)
-//         .with_resource_path("resources/")
-//         .with_font("dungeonfont.png", 32, 32)
-//         .with_font("terminal8x8.png", 8, 8)
-//         .with_simple_console(DISPLAY_WIDTH, DISPLAY_HEIGHT, "dungeonfont.png")
-//         .with_simple_console_no_bg(DISPLAY_WIDTH, DISPLAY_HEIGHT, "dungeonfont.png")
-//         .with_simple_console_no_bg(DISPLAY_WIDTH * 2, DISPLAY_HEIGHT * 2, "terminal8x8.png")
-//         .build()?;
-//     main_loop(context, State::new())
-// }
-
 mod stage {
     use super::*;
     use macroquad::{
-        prelude::{
-            get_last_key_pressed, is_key_released, load_string, Color, KeyCode, DARKGRAY,
-        },
+        prelude::{get_last_key_pressed, is_key_released, load_string, Color, KeyCode, DARKGRAY},
         text::{draw_text_ex, get_text_center, Font, TextParams},
         texture::{load_texture, FilterMode},
         window::{clear_background, next_frame, screen_width},
@@ -276,15 +250,12 @@ mod stage {
     pub(crate) async fn init_tilemap() -> Map {
         let tileset = load_texture("resources/dungeonfont.png").await.unwrap();
         tileset.set_filter(FilterMode::Nearest);
-
         let tiled_map_json = load_string("resources/map.json").await.unwrap();
-
         macroquad_tiled::load_map(&tiled_map_json, &[("dungeonfont.png", tileset)], &[]).unwrap()
     }
 
     pub(crate) async fn main_loop(state: &mut State) {
         clear_background(DARKGRAY);
-
         if let Some(key) = get_last_key_pressed() {
             state.resources.insert(Some(key));
         } else if let Some(mut key) = state.resources.get_mut::<Option<KeyCode>>() {
@@ -296,16 +267,7 @@ mod stage {
                 *key = None;
             }
         }
-
         state.state_tick();
-        // draw_text(
-        //     "abcsdqsds",
-        //     screen_width()/2.,
-        //     screen_height()/2.,
-        //     50.,
-        //     BLACK,
-        // );
-
         next_frame().await
     }
 }
@@ -331,10 +293,8 @@ async fn main() {
     let tileset = tilesets.remove("dungeonfont").unwrap();
     let font = load_ttf_font("resources/font.ttf").await.unwrap();
 
-    let mut state = State::new();
-    state.resources.insert(tileset);
-    state.resources.insert(get_last_key_pressed());
-    state.resources.insert(font);
+    let mut state = State::new(tileset, font);
+
     loop {
         stage::main_loop(&mut state).await;
     }

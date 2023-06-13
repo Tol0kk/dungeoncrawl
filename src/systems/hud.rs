@@ -56,7 +56,7 @@ pub fn hud(ecs: &SubWorld, #[resource] font: &Font) {
         .filter(|(_, carried)| carried.0 == (player))
         .for_each(|(name, _)| {
             draw_text_ex(
-                &format!("{} : {}", y - 20, &name.0),
+                &format!("F{} : {}", (y - 80+20)/20, &name.0),
                 40.,
                 y as f32,
                 TextParams {
@@ -64,13 +64,13 @@ pub fn hud(ecs: &SubWorld, #[resource] font: &Font) {
                 },
             );
 
-            y += 10;
+            y += 20;
         });
     if y > 80 {
         draw_text_ex(
             "Item carried",
             40.,
-            80.,
+            60.,
             TextParams {
                 ..Default::default()
             },
